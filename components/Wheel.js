@@ -46,7 +46,11 @@ export default class Wheel extends React.Component {
                 this.spin()
             }
             else {
-              this.spinValue.setValue(position)   //add decay? to make to slow down smoothly. make it obvious that it is slowing down
+            Animated.timing(this.spinValue, {
+                duration: 3000,
+                easing: Easing.out(Easing.ease),
+                toValue: position,
+            }).start(() => console.log('animation complete'))
             }
         })
       }
@@ -127,6 +131,7 @@ export default class Wheel extends React.Component {
           })
         return (
             <KeyboardAvoidingView behavior="position" enabled style={styles.Wheel}>
+            <RNText style={styles.Header}>MEAL WHEEL</RNText>
             <Image source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Red_Arrow_Down.svg/600px-Red_Arrow_Down.svg.png'}}
                    style={{width: 40, height: 50, alignSelf: 'center'}}
                    />
@@ -146,13 +151,13 @@ export default class Wheel extends React.Component {
             </PieChart>
             </Animated.View>
             <View style={styles.BtnRow}>
-            <TouchableHighlight style={styles.SpinBtn} 
-                onPress={this.toggleSpin }>
-                <RNText style={styles.Text}>{this.state.isSpinning ? 'Stop' : 'Spin'}</RNText>
-            </TouchableHighlight>
             <TouchableHighlight style={styles.ClearBtn}
-                onPress={this.clear}>
-                <RNText style={styles.Text}>Clear</RNText>
+            onPress={this.clear}>
+            <RNText style={styles.Text}>Clear</RNText>
+            </TouchableHighlight>
+            <TouchableHighlight style={styles.SpinBtn} 
+                onPress={this.toggleSpin}>
+                <RNText style={styles.Text}>{this.state.isSpinning ? 'Stop' : 'Spin'}</RNText>
             </TouchableHighlight>
             </View>
             <TextInput style={styles.TextBox} placeholder="ENTER MEAL HERE"  
@@ -164,6 +169,7 @@ export default class Wheel extends React.Component {
     }
 }
 
+//spins backwards when it stops. Is that bad or does it make it more interesting???
 // add a "remove" dropdown list (Picker) or click on a section to remove it
 //store the data on whatever is equivalient to local storage for react native
 //styling

@@ -41,5 +41,10 @@ export default styles = StyleSheet.create({
     },
     Text: {
         fontSize: 20
+    },
+    Header: {
+        fontSize: 45,
+        alignSelf: 'center',
+        padding: 5
     }
 })
