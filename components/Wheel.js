@@ -1,9 +1,10 @@
 import React from 'react';
 import { StyleSheet, View, Animated, Easing, Image, 
         TouchableHighlight, Text as RNText, Platform, 
-        TextInput, KeyboardAvoidingView } from 'react-native';
-import { PieChart } from 'react-native-svg-charts';
+        TextInput, KeyboardAvoidingView, Picker } from 'react-native';
+import { PieChart } from 'react-native-svg-charts'
 import { Text } from 'react-native-svg'
+import styles from '../Styles'
 
 const timing = 1000
 let position
@@ -20,13 +21,15 @@ export default class Wheel extends React.Component {
                 amount: 50,
                 svg: { fill: '#9900cc' }, 
                 name: 'Enter Food'
-            }]
+            }],
+            count: 1
         }
         this.spinValue = new Animated.Value(0)
         this.spin = this.spin.bind(this)
         this.toggleSpin = this.toggleSpin.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
         this.clear = this.clear.bind(this)
+        this.getRandomColor = this.getRandomColor.bind(this)
       }
     
       spin () {
@@ -41,7 +44,6 @@ export default class Wheel extends React.Component {
         ).start(() => {
             if (this.state.isSpinning) {
                 this.spin()
-                // this.spinValue.addListener((val)=> {console.log(val)})
             }
             else {
               this.spinValue.setValue(position)   //add decay? to make to slow down smoothly. make it obvious that it is slowing down
@@ -58,17 +60,23 @@ export default class Wheel extends React.Component {
         }
 
         handleSubmit() {
-            if (this.state.data[0].key === 0) {
-                this.state.data.pop()
-            }
-            this.setState({ 
-                data: this.state.data.concat(                {
-                    key: ++key,
+            if (this.state.data[0].key == 0 && this.state.text) {
+                this.setState({data: [{
+                    key: this.state.count,
                     amount: 50,
-                    svg: { fill: '#600000' },
+                    svg: { fill: this.getRandomColor() },
+                    name: this.state.text}]})
+            }
+            else if (this.state.text) {
+            this.setState({ 
+                data: this.state.data.concat({
+                    key: ++this.state.count,
+                    amount: 50,
+                    svg: { fill: this.getRandomColor() },
                     name: this.state.text
                 })
             })
+        }
             this.setState({ text: '' })
         } 
       
@@ -81,47 +89,23 @@ export default class Wheel extends React.Component {
                     name: 'Enter Food'
                 }]
             })
+            this.spinValue.setValue(1)
         }
 
+        getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+              color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+          }
+
       render() {
-         console.log(this.state.text)
-        // const data = [
-        //     {
-        //         key: 1,
-        //         amount: 50,
-        //         svg: { fill: '#600080' },
-        //         name: 'McDonalds',
-                
-        //     },
-            // {
-            //     key: 2,
-            //     amount: 50,
-            //     svg: { fill: '#9900cc' }, 
-            //     name: 'Make Food'
-            // },
-        //     {
-        //         key: 3,
-        //         amount: 50,
-        //         svg: { fill: '#c61aff' }, 
-        //         name: 'Chipotle'
-        //     },
-        //     {
-        //         key: 4,
-        //         amount: 50,
-        //         svg: { fill: '#d966ff' },
-        //         name: 'Hibachi'
-        //     },
-        //     {
-        //         key: 5,
-        //         amount: 50,
-        //         svg: { fill: '#ecb3ff' },
-        //         name: 'Chilis'
-        //     }
-        // ]
         let data = this.state.data
         const Labels = ({ slices, height, width }) => {
             return slices.map((slice, index) => {
-                const { labelCentroid, pieCentroid, data } = slice;
+                const { pieCentroid, data } = slice;
                 return (
                     <Text
                         key={index}
@@ -131,23 +115,18 @@ export default class Wheel extends React.Component {
                         textAnchor={'middle'}
                         alignmentBaseline={'middle'}
                         fontSize={24}
-                        stroke={'black'}
-                        strokeWidth={0.2}
-                        height={15}
-                        width={15}
                     >
                         {data.name}
                     </Text>
                 )
             })
         }
-
         const spin = this.spinValue.interpolate({
             inputRange: [0, 1],
             outputRange: ['0deg', '360deg']
           })
         return (
-            <KeyboardAvoidingView behavior="position" enabled>
+            <KeyboardAvoidingView behavior="position" enabled style={styles.Wheel}>
             <Image source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Red_Arrow_Down.svg/600px-Red_Arrow_Down.svg.png'}}
                    style={{width: 40, height: 50, alignSelf: 'center'}}
                    />
@@ -166,15 +145,17 @@ export default class Wheel extends React.Component {
                 <Labels/>
             </PieChart>
             </Animated.View>
-            <TouchableHighlight style={{backgroundColor: 'gray', height: 50, width: 150}} 
+            <View style={styles.BtnRow}>
+            <TouchableHighlight style={styles.SpinBtn} 
                 onPress={this.toggleSpin }>
-                <RNText>{this.state.isSpinning ? 'Stop' : 'Start'}</RNText>
+                <RNText style={styles.Text}>{this.state.isSpinning ? 'Stop' : 'Spin'}</RNText>
             </TouchableHighlight>
-            <TouchableHighlight style={{backgroundColor: 'yellow', height:50, width:150}}
+            <TouchableHighlight style={styles.ClearBtn}
                 onPress={this.clear}>
-                <RNText>Clear</RNText>
+                <RNText style={styles.Text}>Clear</RNText>
             </TouchableHighlight>
-            <TextInput style={{height: 40}} placeholder="ENTER RESTAURANT HERE"  
+            </View>
+            <TextInput style={styles.TextBox} placeholder="ENTER MEAL HERE"  
                        onChangeText={(text) => this.setState({text})}
                        onSubmitEditing={this.handleSubmit}
                        value={this.state.text}/>
@@ -183,10 +164,6 @@ export default class Wheel extends React.Component {
     }
 }
 
-//generate a random color for pie chart
-//map through a list
-//make it start and stop on the touchablehighlight
-// add a "remove" dropdown list of what has been enterd
+// add a "remove" dropdown list (Picker) or click on a section to remove it
 //store the data on whatever is equivalient to local storage for react native
-//styleing
-//
+//styling
